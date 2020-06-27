@@ -13,9 +13,9 @@
 
 ---
 
-[MQTT X](https://mqttx.app/cn) 是 [EMQ](http://emqx.io/cn) 开源的一款跨平台 MQTT 5.0 桌面客户端，它支持 macOS, Linux, Windows。
+[MQTT X](https://mqttx.app/cn) 是 [EMQ](http://emqx.io/cn) 开源的一款跨平台 MQTT 5.0 客户端工具，它支持 macOS, Linux, Windows，并且支持 MQTT 消息格式转换。
 
-[MQTT X](https://mqttx.app/cn) 的用户界面借助聊天软件的形式简化了页面的操作逻辑，用户可以快速创建连接保存并同时建立多个连接客户端，方便用户快速测试 MQTT/TCP、MQTT/TLS 的连接、发布/订阅功能及其他特性。
+[MQTT X](https://mqttx.app/cn) 的用户界面借助聊天软件的形式简化了页面的操作逻辑，用户可以快速创建连接保存并同时建立多个连接客户端，方便用户快速测试 MQTT/TCP、MQTT/TLS、MQTT/WebSocket 的 **连接/发布/订阅** 功能及其他特性。
 
 > [MQTT](http://mqtt.org/faq) 全称为 Message Queuing Telemetry Transport（消息队列遥测传输）是一种基于 发布/订阅 范式的“轻量级”消息协议，旨在用于受限设备和低带宽，高延迟或不可靠的网络，由 IBM 发布。
 
@@ -24,6 +24,18 @@
 ![mqttx-preview](./assets/mqttx-preview.png)
 
 ## 安装
+
+当前可从以下应用商店进行快速下载安装
+
+### MacOS App Store
+
+[![Get it from the Snap Store](./assets/app-store-download.svg)](https://apps.apple.com/cn/app/mqttx/id1514074565?mt=12)
+
+### Linux
+
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/mqttx)
+
+### 发行包
 
 请从 [GitHub Releases](https://github.com/emqx/MQTTX/releases) 下载符合您的版本并安装使用。
 

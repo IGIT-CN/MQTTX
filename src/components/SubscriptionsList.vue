@@ -18,24 +18,29 @@
           </a>
         </div>
         <div
-          class="topics-item"
           v-for="(sub, index) in subsList"
           :key="index"
+          :class="['topics-item', index === topicActiveIndex ? 'active' : '']"
           :style="{
             borderLeft: `4px solid ${sub.color}`,
-          }">
+          }"
+          @click="handleClickTopic(sub, index)">
           <el-tooltip
             :effect="theme !== 'light' ? 'light' : 'dark'"
-            :disabled="sub.topic.length < 25"
-            :content="sub.topic"
-            :open-delay="500"
+            :content="copySuccess ? $t('connections.topicCopied') : sub.topic"
+            :open-delay="!copySuccess ? 0 : 500"
             placement="top">
-            <span class="topic">
+            <a
+              v-clipboard:copy="sub.topic"
+              v-clipboard:success="onCopySuccess"
+              href="javascript:;"
+              class="topic"
+              @click.stop="stopClick">
               {{ sub.topic }}
-            </span>
+            </a>
           </el-tooltip>
           <span class="qos">QoS {{ sub.qos }}</span>
-          <a href="javascript:;" class="close" @click="removeSubs(sub)">
+          <a href="javascript:;" class="close" @click.stop="removeSubs(sub)">
             <i class="el-icon-close"></i>
           </a>
         </div>
@@ -137,6 +142,8 @@ export default class SubscriptionsList extends Vue {
   }
   private qosOption: qosList = [0, 1, 2]
   private subsList: SubscriptionModel[] = []
+  private copySuccess = false
+  private topicActiveIndex: number | null = null
 
   get rules() {
     return {
@@ -145,7 +152,7 @@ export default class SubscriptionsList extends Vue {
     }
   }
 
-  get vueForm(): VueForm {
+  get subForm(): VueForm {
     return this.$refs.form as VueForm
   }
 
@@ -155,6 +162,7 @@ export default class SubscriptionsList extends Vue {
 
   @Watch('record')
   private handleRecordChanged(val: ConnectionModel) {
+    this.topicActiveIndex = null
     this.getCurrentConnection(val.id as string)
   }
 
@@ -198,7 +206,7 @@ export default class SubscriptionsList extends Vue {
       this.$message.warning(this.$t('connections.notConnect') as string)
       return false
     }
-    this.vueForm.validate((valid: boolean) => {
+    this.subForm.validate((valid: boolean) => {
       if (!valid) {
         return false
       }
@@ -270,8 +278,8 @@ export default class SubscriptionsList extends Vue {
   }
 
   private resetSubs() {
-    this.vueForm.clearValidate()
-    this.vueForm.resetFields()
+    this.subForm.clearValidate()
+    this.subForm.resetFields()
   }
 
   private getCurrentConnection(id: string) {
@@ -290,7 +298,27 @@ export default class SubscriptionsList extends Vue {
     }
   }
 
-  private created(): void {
+  private onCopySuccess() {
+    this.copySuccess = true
+    setTimeout(() => {
+      this.copySuccess = false
+    }, 1000)
+  }
+  private stopClick(): boolean {
+    return false
+  }
+
+  private handleClickTopic(item: SubscriptionModel, index: number) {
+    if (this.topicActiveIndex === null || this.topicActiveIndex !== index) {
+      this.topicActiveIndex = index
+      this.$emit('onClickTopic', item, false)
+    } else if (this.topicActiveIndex === index) {
+      this.topicActiveIndex = null
+      this.$emit('onClickTopic', item, true)
+    }
+  }
+
+  private created() {
     this.getCurrentConnection(this.connectionId)
   }
 }
@@ -319,6 +347,7 @@ export default class SubscriptionsList extends Vue {
     height: 100%;
     overflow: scroll;
     .topics-item {
+      cursor: pointer;
       color: var(--color-text-title);
       background: var(--color-bg-topics);
       padding: 0px 8px;
@@ -328,6 +357,15 @@ export default class SubscriptionsList extends Vue {
       position: relative;
       clear: both;
       border-radius: 2px;
+      -moz-user-select: none;
+      -khtml-user-select: none;
+      user-select: none;
+      transition: all .3s ease;
+      box-shadow: 1px 1px 2px 0px var(--color-bg-topics_shadow);
+      &.active {
+        background: var(--color-bg-topics_active);
+        box-shadow: none;
+      }
       .topic {
         max-width: 120px;
         margin-left: 5px;
@@ -335,7 +373,7 @@ export default class SubscriptionsList extends Vue {
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
-        user-select: all;
+        color: var(--color-text-default);
       }
       .qos {
         float: right;

@@ -122,7 +122,8 @@
           :subsVisible.sync="showSubs"
           :connectionId="$route.params.id"
           :record="record"
-          :top="showClientInfo ? bodyTop.open: bodyTop.close"/>
+          :top="showClientInfo ? bodyTop.open: bodyTop.close"
+          @onClickTopic="handleTopicClick"/>
         <div v-for="(message, index) in messages" :key="index">
           <MsgLeftItem
             v-if="!message.out"
@@ -155,6 +156,7 @@ import { Getter, Action } from 'vuex-class'
 import { deleteConnection, updateConnection, updateConnectionMessage } from '@/utils/api/connection'
 import time from '@/utils/time'
 import matchSearch from '@/utils/matchSearch'
+import topicMatch, { matchTopicMethod } from '@/utils/topicMatch'
 import { getClientOptions, getMQTTProtocol } from '@/utils/mqttUtils'
 import MsgRightItem from '@/components/MsgRightItem.vue'
 import MsgLeftItem from '@/components/MsgLeftItem.vue'
@@ -219,6 +221,7 @@ export default class ConnectionsContent extends Vue {
     '3.1.1': 4,
     '5.0': 5,
   }
+  private activeTopic = ''
 
   public connect(): boolean | void {
     if (this.client.connected) {
@@ -342,6 +345,22 @@ export default class ConnectionsContent extends Vue {
     updateConnection(this.record.id as string, this.record)
   }
   private handleMsgTypeChanged(type: MessageType) {
+    if (this.activeTopic !== '') {
+      topicMatch(this.record.messages, this.activeTopic).then((res) => {
+        if (res) {
+          if (type === 'received') {
+            this.messages = res.filter(($: MessageModel) => !$.out)
+          } else if (type === 'publish') {
+            this.messages = res.filter(($: MessageModel) => $.out)
+          } else {
+            this.messages = res
+          }
+        } else {
+          this.messages = []
+        }
+      })
+      return false
+    }
     if (type === 'received') {
       this.messages = this.record.messages.filter(($: MessageModel) => !$.out)
     } else if (type === 'publish') {
@@ -377,6 +396,22 @@ export default class ConnectionsContent extends Vue {
     } else {
       this.getMessages(this.$route.params.id)
     }
+  }
+  private handleTopicClick(sub: SubscriptionModel, reset: boolean) {
+    this.getMessages(this.$route.params.id)
+    if (reset) {
+      this.activeTopic = ''
+      return false
+    }
+    this.activeTopic = sub.topic
+    const $messages = [...this.messages]
+    topicMatch($messages, sub.topic).then((res) => {
+      if (res) {
+        this.messages = res
+      } else {
+        this.messages = []
+      }
+    })
   }
   private handleSearchOpen() {
     this.searchVisible = true
@@ -424,7 +459,7 @@ export default class ConnectionsContent extends Vue {
   }
   private cancel() {
     this.connectLoading = false
-    this.client.end()
+    this.client.end(true)
     this.retryTimes = 0
   }
   private disconnect(): boolean | void {
@@ -539,9 +574,15 @@ export default class ConnectionsContent extends Vue {
         retain: packet.retain as boolean,
       }
       this.pushMessage({ id, message: receivedMessage })
-      this.record.messages.push({ ...receivedMessage })
       const connectionId = this.$route.params.id
       if (id === connectionId) {
+        this.record.messages.push({ ...receivedMessage })
+        const isActiveTopicMessages = matchTopicMethod(this.activeTopic, topic)
+        if (this.msgType === 'received' && !this.activeTopic) {
+          this.messages.push(receivedMessage)
+        } else if (this.activeTopic && isActiveTopicMessages && this.msgType !== 'publish') {
+          this.messages.push(receivedMessage)
+        }
         updateConnectionMessage(connectionId, { ...receivedMessage })
       } else {
         updateConnectionMessage(id, { ...receivedMessage })
@@ -571,10 +612,6 @@ export default class ConnectionsContent extends Vue {
       this.$message.warning(this.$t('connections.topicReuired') as string)
       return false
     }
-    if (!payload && !retain) {
-      this.$message.warning(this.$t('connections.payloadReuired') as string)
-      return false
-    }
     this.client.publish(
       topic,
       payload,
@@ -597,6 +634,12 @@ export default class ConnectionsContent extends Vue {
           message: publishMessage,
         })
         this.record.messages.push({ ...publishMessage })
+        const isActiveTopicMessages = matchTopicMethod(this.activeTopic, topic)
+        if (this.msgType === 'publish' && !this.activeTopic) {
+          this.messages.push(publishMessage)
+        } else if (this.activeTopic && isActiveTopicMessages && this.msgType !== 'received') {
+          this.messages.push(publishMessage)
+        }
         updateConnectionMessage(this.record.id as string, { ...publishMessage })
         setTimeout(() => {
           window.scrollTo(0, document.body.scrollHeight + 160)
@@ -614,7 +657,7 @@ export default class ConnectionsContent extends Vue {
     }, 500)
   }
 
-  private created(): void {
+  private created() {
     const { id } = this.$route.params
     this.getConnectionValue(id)
     this.getMessages(id)

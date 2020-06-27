@@ -39,7 +39,11 @@ If there are network reasons that cause slow network speeds or jam when download
 
 - macOS
 
-MacOS users are encouraged to download the installation package file in `dmg` format first. They can also choose to download the compressed file of `mac.zip`, which can be used quickly after decompression.
+For macOS users, it is recommended to download from the Mac App store.
+
+[![Get it from the Snap Store](../assets/app-store-download.svg)](https://apps.apple.com/us/app/mqttx/id1514074565?mt=12)
+
+When you need to download files to install, it is recommended to download the installation package file in `dmg` format first. They can also choose to download the compressed file of `mac.zip`, which can be used quickly after decompression.
 
 **Note**: However, for different `macOS` system versions, `zip` compression package may not be opened after decompression in the `10.15.2` system version. Please prefer the `dmg` file.
 
@@ -50,6 +54,14 @@ For Windows users, please download the latest version of the `exe` file. After d
 - Linux
 
 For Linux users, please download the latest version of the `AppImage` file or use the snap file for quick installation.
+
+For installation using `snap` file, you can also execute this command to quickly install or visit Snap Store:
+
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/mqttx)
+
+```shell
+sudo snap install mqttx
+```
 
 **Note**: When installing with `snap` files, there may be a problem of insufficient permissions. For details, refer to this `issue` [https://github.com/emqx/MQTTX/issues/109](https://github.com/emqx/MQTTX/issues/109)
 
@@ -103,7 +115,7 @@ After entering the creation page, it is required to configure or fill in the rel
 
    When you need to enable `SSL/TLS` authentication, you only need to set the `SSL/TLS` configuration item in the configuration as `true`. The two methods,`CA signed self` and `Self signed` are provided.
 
-   If `Self signed` is selected, certificate configuration can be performed. Click the folder button on the far right to select the certificates you have generated. If it is a one-way connection, you only need to select your `CA File`. If it is a two-way authentication, you also need to select to configure `Client Certificate File` and `Client key file`.
+   If `Self signed` is selected, certificate configuration can be performed. Click the folder button on the far right to select the certificates you have generated. If it is a one-way connection, you only need to select your `CA File`. If it is a two-way authentication, you also need to select to configure `Client Certificate File` and `Client key file`. When the option of `Strict validate Certificate` is enabled, a more complete certificate verification connection will be enabled. It is generally recommended to enable it when you need to test the production environment.
 
 ![mqttx-certs](../assets/mqttx-certs.png)
 
@@ -113,7 +125,7 @@ After entering the creation page, it is required to configure or fill in the rel
 
 5. MQTT 5.0
 
-   In the advanced configuration, you can select the protocol version of MQTT, including MQTT v3.1.1 and MQTT v5.0, and the default is v3.1.1. If you choose v5.0, you can also configure `Session Expiry Interval`, `Receive Maximum` (optional).
+   In the advanced configuration, you can select the protocol version of MQTT, including MQTT v3.1.1 and MQTT v5.0, and the default is v3.1.1. If you choose v5.0, you can also configure `Session Expiry Interval`, `Receive Maximum` and `Topic Alias Maximu` (optional).
 
 ![mqttx-v5](../assets/mqttx-v5.png)
 
@@ -135,7 +147,7 @@ After the configuration is complete, click the `Connect` button in the upper rig
 
 2. Add subscription
 
-   Click the `New Subscription` button in the lower left corner to quickly add a Topic. Each Topic can be marked with a color, which can be randomly generated or opened by the color selector. The rightmost button at the top of the subscription list can hide the subscription list to show more space on the page.
+   Click the `New Subscription` button in the lower left corner to quickly add a Topic. Each Topic can be marked with a color, which can be randomly generated or opened by the color selector. The rightmost button at the top of the subscription list can hide the subscription list to show more space on the page. After the addition is complete, click on the subscribed Topic items in the subscription list to achieve message filtering. The message view will only display the message content subscribed to the current topic. Click again to cancel the filter; You can also directly click other subscribed Topic items to view the corresponding message content. By clicking on the topic name, you can quickly copy the current topic information. When you need to send a message to this topic, you can quickly paste it into the topic input box of the message bar to modify it, and you can quickly complete the operation.
 
 ![mqttx-topic](../assets/mqttx-topic.png)
 
